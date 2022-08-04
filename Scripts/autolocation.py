@@ -1,6 +1,7 @@
 from decimal import Decimal
 from yandex_geocoder import Client
 from configure import config
+from decimal import Decimal
 
 client = Client(config.get('yandex_api'))
 
@@ -13,7 +14,7 @@ address = ''
 
 
 def identify_location(place_name):
-    location_data = client.coordinates(place_name + ', Севастополь')
+    location_data = client.coordinates(f'{place_name}, Севастополь')
     coordinates['longitude'] = location_data[0]
     coordinates['latitude'] = location_data[1]
     global address

@@ -1,6 +1,5 @@
 import logging
 import schedule
-import beelabs_keyboards
 from aiogram import Bot, Dispatcher, executor, types
 from configure import config, path, group_id
 from beelabs_keyboards import confirmation_start, class_names, semester_nums, tasks, get_laba_nums, variants, \
@@ -65,18 +64,15 @@ async def all_messages(message: types.Message):
     if flags.get('wish'):
         order_id['Пожелание'] += f'{message.text} '
         await message.delete()
-
     elif flags.get('condition'):
         order_id['Условие'] += f'{message.text} '
         await message.delete()
 
     elif message.text.startswith('!'):
         identify_location(message.text[1:])
-        await bot.send_message(message.chat.id, address)
-        await bot.send_location(message.chat.id, coordinates.get('latitude'), coordinates.get('longitude'),
-                                horizontal_accuracy=1500)
+        await bot.send_location(message.chat.id, coordinates.get('latitude'), coordinates.get('longitude'), horizontal_accuracy=1500)
 
-    elif 'пчела' in message.text.lower():
+    elif  message.text.lower() == 'пчела?':
         await message.answer('Долбаёб?')
 
     elif 'даня' in message.text.lower() and message.chat.id == group_id.get('student_sevsu'):
