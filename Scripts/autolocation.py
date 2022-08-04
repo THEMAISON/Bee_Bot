@@ -1,6 +1,5 @@
 from decimal import Decimal
 from yandex_geocoder import Client
-
 from configure import config
 
 client = Client(config.get('yandex_api'))

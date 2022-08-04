@@ -1,5 +1,6 @@
 import logging
 import schedule
+import beelabs_keyboards
 from aiogram import Bot, Dispatcher, executor, types
 from configure import config, path, group_id
 from beelabs_keyboards import confirmation_start, class_names, semester_nums, tasks, get_laba_nums, variants, \
@@ -48,6 +49,7 @@ async def get_schedule_document(message: types.Message):
     is3 = types.KeyboardButton('📘 ИС3')
     pi1 = types.KeyboardButton('📙 ПИ1')
     iituts.add(is1, is2, is3, pi1)
+
     await message.delete()
     await message.answer('🐝 Выберите вашу группу', reply_markup=iituts)
 
