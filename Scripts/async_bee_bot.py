@@ -2,10 +2,10 @@ import logging
 import schedule
 from aiogram import Bot, Dispatcher, executor, types
 from configure import config, path, group_id
+from beelabs_values import order_id, get_order, flags
+from autolocation import identify_location, coordinates
 from beelabs_keyboards import confirmation_start, class_names, semester_nums, tasks, get_laba_nums, variants, \
     way_releases, confirmation_end, web_site, conditions, wishes
-from beelabs_values import order_id, get_order, flags
-from autolocation import identify_location, coordinates, address
 
 API_TOKEN = config.get('token')
 
@@ -16,7 +16,7 @@ dp = Dispatcher(bot)
 
 
 @dp.message_handler(commands=['start'])
-async def send_welcome(message: types.Message):
+async def send_welcome(message: types.Message) -> None:
     await message.answer('🐝 *Bee Bot* - Бот для студентов СЕВГУ\n'
                          '🛠 *Разработчик* - THEMAISON',
                          parse_mode='MARKDOWN')
@@ -24,20 +24,19 @@ async def send_welcome(message: types.Message):
 
 
 @dp.message_handler(commands=['links'])
-async def send_welcome(message: types.Message):
+async def send_welcome(message: types.Message) -> None:
     links = types.InlineKeyboardMarkup(row_width=2)
     sevsu = types.InlineKeyboardButton('🌊 SevSU', 'https://www.sevsu.ru/')
     moodle = types.InlineKeyboardButton('🖥 Moodle', 'https://do.sevsu.ru/')
     rocket = types.InlineKeyboardButton('📢 Rocket Chat', 'https://chat.is.sevsu.ru/')
     links.add(sevsu)
     links.add(moodle, rocket)
-
     await message.answer('🔗 Доступные ссылки', reply_markup=links)
     await message.delete()
 
 
 @dp.message_handler(commands=['sdoc'])
-async def get_schedule_document(message: types.Message):
+async def get_schedule_document(message: types.Message) -> None:
     if schedule.check_for_updates() or not schedule.have_legacy():
         schedule.download()
         await message.answer('✅ Расписание обновлено')
@@ -54,31 +53,20 @@ async def get_schedule_document(message: types.Message):
 
 
 @dp.message_handler(commands=['beelabs'])
-async def get_beelabs(message: types.Message):
+async def get_beelabs(message: types.Message) -> None:
     await message.delete()
     await bot.send_message(message.from_user.id, '📝 Начать оформление заказа?', reply_markup=confirmation_start)
 
 
 @dp.message_handler(content_types=['text'])
-async def all_messages(message: types.Message):
+async def message_answers(message: types.Message) -> None:
     if flags.get('wish'):
         order_id['Пожелание'] += f'{message.text} '
         await message.delete()
+
     elif flags.get('condition'):
         order_id['Условие'] += f'{message.text} '
         await message.delete()
-
-    elif message.text.startswith('!'):
-        identify_location(message.text[1:])
-        await bot.send_location(message.chat.id, coordinates.get('latitude'), coordinates.get('longitude'), horizontal_accuracy=1500)
-
-    elif  message.text.lower() == 'пчела?':
-        await message.answer('Долбаёб?')
-
-    elif 'даня' in message.text.lower() and message.chat.id == group_id.get('student_sevsu'):
-        await bot.send_sticker(message.chat.id,
-                               sticker='CAACAgIAAxkBAAEFcAABYugSXfOM5JcRtFHssaSjrJPqjvsAAoUaAALJNVFImYmO43hfnoUpBA',
-                               reply_to_message_id=message.message_id)
 
     elif 'ИС' in message.text or 'ПИ' in message.text:
         group = int(message.text[-1]) if 'ИС' in message.text else 4
@@ -95,12 +83,23 @@ async def all_messages(message: types.Message):
         else:
             await message.answer('⚠ Расписание недоступно!', reply_markup=types.ReplyKeyboardRemove())
 
+    if message.text.startswith('!'):
+        identify_location(message.text[1:])
+        await bot.send_location(message.chat.id, coordinates.get('latitude'), coordinates.get('longitude'))
+
+    elif message.text.lower() == 'пчела?':
+        await message.answer('Долбаёб?')
+
+    elif 'даня' in message.text.lower() and message.chat.id == group_id.get('student_sevsu'):
+        await bot.send_sticker(message.chat.id,
+                               sticker='CAACAgIAAxkBAAEFcAABYugSXfOM5JcRtFHssaSjrJPqjvsAAoUaAALJNVFImYmO43hfnoUpBA',
+                               reply_to_message_id=message.message_id)
+
 
 @dp.callback_query_handler()
-async def beelabs_callback(callback: types.CallbackQuery):
+async def beelabs_callback(callback: types.CallbackQuery) -> None:
     if callback.data == 'ready':
-        await beelabs_message(callback, 'Отлично! Переходим к оформлению заказа', '📒 Выберите тип предмета',
-                              class_names)
+        await beelabs_message(callback, 'Отлично! Переходим к оформлению заказа', '📒 Выберите тип предмета', class_names)
 
     elif 'class_name' in callback.data:
         order_id['Предмет'] = callback.data[-1]
@@ -117,7 +116,7 @@ async def beelabs_callback(callback: types.CallbackQuery):
         if task_type == '1':
             await beelabs_message(callback, 'Задание выбрано!', '⚗ Выберите номер лабораторной работы',
                                   get_laba_nums(int(order_id.get('Семестр'))))
-        elif task_type in '234':
+        elif task_type in '2':
             flags['condition'] = True
             await beelabs_message(callback, 'Задание выбрано!', '✒ Напишите условие', conditions)
 
@@ -144,14 +143,18 @@ async def beelabs_callback(callback: types.CallbackQuery):
                               confirmation_end)
 
     elif callback.data == 'confirm':
+        order_id['Условие'] = ''
+        order_id['Пожелание'] = ''
         await beelabs_message(callback, 'Почти готово!', '📲 Перейдите на сайт', web_site)
 
     elif callback.data == 'cancel':
+        order_id['Условие'] = ''
+        order_id['Пожелание'] = ''
         await callback.answer('Заказ отменен!')
         await callback.message.delete()
 
 
-async def beelabs_message(callback, answer_text, message_text, markup):
+async def beelabs_message(callback, answer_text, message_text, markup) -> None:
     await callback.answer(answer_text)
     await callback.message.edit_text(message_text, parse_mode='MARKDOWN')
     await callback.message.edit_reply_markup(markup)

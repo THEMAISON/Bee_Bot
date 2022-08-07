@@ -7,23 +7,6 @@ count_labs = {
     4: 10,
 }
 
-
-def set_markup(prefix, markup, count_buttons):
-    cb = 0
-    for i in range(1, 9):
-        for j in range(1, 9):
-            cb += 1
-            text = str(j + (i - 1) * 8)
-            button = types.InlineKeyboardButton(text, callback_data=f'{prefix}{text}')
-            if j == 1:
-                markup.add(button)
-            else:
-                markup.insert(button)
-            if cb == count_buttons:
-                markup.add(cancel_button)
-                return markup
-
-
 cancel_button = types.InlineKeyboardButton('❌ Отменить', callback_data='cancel')
 
 conditions = types.InlineKeyboardMarkup(row_width=2)
@@ -35,7 +18,7 @@ send_wish = types.InlineKeyboardButton('📤 Отправить', callback_data=
 wishes.add(cancel_button, send_wish)
 
 confirmation_start = types.InlineKeyboardMarkup(row_width=2)
-ready = types.InlineKeyboardButton('👆 Начать', callback_data='ready')
+ready = types.InlineKeyboardButton('✏ Начать', callback_data='ready')
 confirmation_start.add(cancel_button, ready)
 
 class_names = types.InlineKeyboardMarkup(row_width=3)
@@ -60,6 +43,22 @@ fun = types.InlineKeyboardButton('⚙ Функция', callback_data='task2')
 # practice = types.InlineKeyboardButton('⚒ Практика', callback_data='task4')
 tasks.add(laba, fun)
 tasks.add(cancel_button)
+
+
+def set_markup(prefix, markup, count_buttons):
+    cb = 0
+    for i in range(1, 9):
+        for j in range(1, 9):
+            cb += 1
+            text = str(j + (i - 1) * 8)
+            button = types.InlineKeyboardButton(text, callback_data=f'{prefix}{text}')
+            if j == 1:
+                markup.add(button)
+            else:
+                markup.insert(button)
+            if cb == count_buttons:
+                markup.add(cancel_button)
+                return markup
 
 
 def get_laba_nums(count_nums):

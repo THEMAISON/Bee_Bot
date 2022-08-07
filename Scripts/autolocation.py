@@ -9,12 +9,8 @@ coordinates = {
     'longitude': Decimal(0.1)
 }
 
-address = ''
 
-
-def identify_location(place_name):
+def identify_location(place_name) -> None:
     location_data = client.coordinates(f'{place_name}, Севастополь')
     coordinates['longitude'] = location_data[0]
     coordinates['latitude'] = location_data[1]
-    global address
-    address = client.address(location_data[0], location_data[1])

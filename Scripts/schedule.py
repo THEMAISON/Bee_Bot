@@ -1,5 +1,3 @@
-from configure import path
-
 import os
 import math
 import requests
