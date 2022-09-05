@@ -24,15 +24,15 @@ def download_file(key):
 
 
 def need_to_update(key):
-
     result = requests.get(sch_page).content
     soup = BeautifulSoup(result, 'html.parser')
-    target_word = '2_kurs_IITUTS' if key == 'main' else 'pul'
+
+    target_word = '2 курс ИИТУТС' if key == 'main' else 'pul'
 
     for url_text in soup.find_all('a'):
         url = url_text.get('href')
 
-        if target_word in url:
+        if target_word in url and 'Магистратура' not in url:
             base = urls[key][:35]
             current = urls[key][35:]
             acquired = url[15:]
@@ -44,6 +44,9 @@ def need_to_update(key):
 
 
 def prepare(key):
+    print('Old link: ' + urls[key])
     if not have_file(key) or need_to_update(key):
         download_file(key)
+        print('Schedule has been updated!')
+    print('New link: ' + urls[key])
     return path_to_save + schedules[key]

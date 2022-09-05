@@ -1,15 +1,13 @@
 from aiogram import Bot, Dispatcher, executor, types
 from autolocation import *
 from schedule_receipt import prepare
+from file_names import schedules
+from configure import config
 
-API_TOKEN = config.get('token')
-
-bot = Bot(token=API_TOKEN)
+bot = Bot(token=config['token'])
 dp = Dispatcher(bot)
 
-
-# await message.answer('✅ Расписание обновлено')
-# await message.answer('⚠ Расписание недоступно!)
+is_schedule = False
 
 
 @dp.message_handler(commands=['start'])
@@ -20,25 +18,26 @@ async def send_welcome(message: types.Message) -> None:
 
 @dp.message_handler(commands=['links'])
 async def send_welcome(message: types.Message) -> None:
-    links = types.InlineKeyboardMarkup(row_width=2)
-    sevsu = types.InlineKeyboardButton('🌊 SEVSU', 'https://www.sevsu.ru/')
-    moodle = types.InlineKeyboardButton('🖥 MOODLE', 'https://do.sevsu.ru/')
-    rocket = types.InlineKeyboardButton('📢 ROCKET', 'https://chat.is.sevsu.ru/')
-    links.add(sevsu)
-    links.add(moodle, rocket)
+    links = types.InlineKeyboardMarkup(row_width=3)
+    sevsu = types.InlineKeyboardButton('🌊 Официальный сайт', 'https://www.sevsu.ru/')
+    moodle = types.InlineKeyboardButton('💻 Мудл', 'https://do.sevsu.ru/')
+    rocket = types.InlineKeyboardButton('📢 Рокет чат', 'https://chat.is.sevsu.ru/')
+    links.add(sevsu, moodle, rocket)
     await message.answer('🔗 Доступные ссылки', reply_markup=links)
     await message.delete()
 
 
 @dp.message_handler(commands=['sch'])
 async def get_main_schedule(message: types.Message) -> None:
-    schedules = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-    m = types.KeyboardButton('🍬 ОСНОВНОЕ')
-    p = types.KeyboardButton('🍫 ПУЛ')
-    f = types.KeyboardButton('🍿 ФИЗРА')
-    schedules.add(m, p, f)
+    sch = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+    m = types.KeyboardButton('📖 Основное')
+    p = types.KeyboardButton('📓 ПУЛ')
+    f = types.KeyboardButton('📒 Электив физ-ра')
+    sch.add(m, p, f)
     await message.delete()
-    await message.answer('Выберите раписание...', reply_markup=schedules)
+    await message.answer('Выберите раписание...', reply_markup=sch)
+    global is_schedule
+    is_schedule = True
 
 
 @dp.message_handler(commands=['beelabs'])
@@ -52,21 +51,17 @@ async def get_beelabs(message: types.Message) -> None:
 
 @dp.message_handler(content_types=['text'])
 async def message_answers(message: types.Message) -> None:
-    if '🍬 ОСНОВНОЕ' in message.text:
-        await message.delete()
-        await message.answer(f'*🍬 Основное расписание*\n', parse_mode='MARKDOWN')
-        with open(prepare('main'), 'rb') as file:
-            await bot.send_document(message.chat.id, file, reply_markup=types.ReplyKeyboardRemove())
+    global is_schedule
+    if is_schedule:
+        await message.answer(f'*✅ Расписание готово*\n', parse_mode='MARKDOWN')
 
-    elif '🍫 ПУЛ' in message.text:
-        await message.delete()
-        await message.answer(f'*🍫 ПУЛ*\n', parse_mode='MARKDOWN')
-        with open(prepare('pul'), 'rb') as file:
-            await bot.send_document(message.chat.id, file, reply_markup=types.ReplyKeyboardRemove())
+        for key, value in schedules.items():
+            if message.text[2:] in value:
+                with open(prepare(key), 'rb') as file:
+                    await bot.send_document(message.chat.id, file, reply_markup=types.ReplyKeyboardRemove())
+                break
 
-    elif '🍿 ФИЗРА' in message.text:
-        await message.delete()
-        await message.answer('⚠ Расписание недоступно!', reply_markup=types.ReplyKeyboardRemove())
+        is_schedule = False
 
     elif message.text.startswith('!'):
         identify_location(message.text[1:])
