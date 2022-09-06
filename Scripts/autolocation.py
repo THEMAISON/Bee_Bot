@@ -11,6 +11,6 @@ coordinates = {
 
 
 def identify_location(place_name) -> None:
-    location_data = client.coordinates(f'{place_name}, Севастополь')
+    location_data = client.coordinates(place_name)
     coordinates['longitude'] = location_data[0]
     coordinates['latitude'] = location_data[1]

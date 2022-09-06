@@ -19,10 +19,12 @@ async def send_welcome(message: types.Message) -> None:
 @dp.message_handler(commands=['links'])
 async def send_welcome(message: types.Message) -> None:
     links = types.InlineKeyboardMarkup(row_width=3)
-    sevsu = types.InlineKeyboardButton('🌊 Официальный сайт', 'https://www.sevsu.ru/')
+    sevsu = types.InlineKeyboardButton('🌊 Оф. Сайт', 'https://www.sevsu.ru/')
     moodle = types.InlineKeyboardButton('💻 Мудл', 'https://do.sevsu.ru/')
-    rocket = types.InlineKeyboardButton('📢 Рокет чат', 'https://chat.is.sevsu.ru/')
-    links.add(sevsu, moodle, rocket)
+    rocket = types.InlineKeyboardButton('📢 Рокет Чат', 'https://chat.is.sevsu.ru/')
+    elective = types.InlineKeyboardButton('🎽 Электив Физ-ра', 'https://elective.sevsu.ru/dashboard')
+    links.add(sevsu)
+    links.add(moodle, rocket, elective)
     await message.answer('🔗 Доступные ссылки', reply_markup=links)
     await message.delete()
 
@@ -31,9 +33,9 @@ async def send_welcome(message: types.Message) -> None:
 async def get_main_schedule(message: types.Message) -> None:
     sch = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
     m = types.KeyboardButton('📖 Основное')
+    n = types.KeyboardButton('📒 Новое')
     p = types.KeyboardButton('📓 ПУЛ')
-    f = types.KeyboardButton('📒 Электив физ-ра')
-    sch.add(m, p, f)
+    sch.add(m, n, p)
     await message.delete()
     await message.answer('Выберите раписание...', reply_markup=sch)
     global is_schedule

@@ -1,7 +1,7 @@
 schedules = {
     'main': 'Основное.xlsx',
-    'pul': 'ПУЛ.xlsx',
-    'fiz': 'Электив физ-ра .xlsx'
+    'new': 'Новое.xlsx',
+    'pul': 'ПУЛ.xlsx'
 }
 
 iituts = {

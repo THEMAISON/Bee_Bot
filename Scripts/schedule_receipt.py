@@ -7,7 +7,6 @@ from configure import path_to_save
 urls = {
     'main': 'https://www.sevsu.ru/upload/iblock/f3a/41ws2acavp11ywtjbnnyosix3cuumlta/2_kurs_IITUTS.xlsx',
     'pul': 'https://www.sevsu.ru/upload/iblock/fd0/ixkrqs052h3tkgrlejqee2ylntnsv51p/pul.xlsx',
-    'fiz': 'https://www.sevsu.ru/'
 }
 
 sch_page = 'https://www.sevsu.ru/univers/shedule/'
@@ -44,9 +43,9 @@ def need_to_update(key):
 
 
 def prepare(key):
-    print('Old link: ' + urls[key])
-    if not have_file(key) or need_to_update(key):
+    if key == 'new':
+        return path_to_save + schedules[key]
+    elif not have_file(key) or need_to_update(key):
         download_file(key)
         print('Schedule has been updated!')
-    print('New link: ' + urls[key])
     return path_to_save + schedules[key]
